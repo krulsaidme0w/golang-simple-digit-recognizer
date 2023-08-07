@@ -3,11 +3,13 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	d "github.com/krulsaidme0w/golang-simple-neural-network/internal/data"
 	h "github.com/krulsaidme0w/golang-simple-neural-network/internal/handler"
 	n "github.com/krulsaidme0w/golang-simple-neural-network/internal/nnetwork"
+	"github.com/krulsaidme0w/golang-simple-neural-network/pkg/helper"
 )
 
 const (
@@ -21,7 +23,7 @@ const (
 func main() {
 	nn := n.NewNeuralNetwork(inputNodes, hiddenNodes, outputNodes, epochesCount, learningRate)
 
-	trainingDataRaw, err := d.ReadCSVFile("data/mnist_train_100.csv")
+	trainingDataRaw, err := d.ReadCSVFile("data/mnist_train.csv")
 	if err != nil {
 		return
 	}
@@ -41,32 +43,32 @@ func main() {
 	elapsed := time.Since(start)
 	fmt.Println("train took", elapsed)
 
+	testDataRaw, err := d.ReadCSVFile("data/mnist_test.csv")
+	if err != nil {
+		return
+	}
+
+	rightAnswers := 0
+	wrongAnswers := 0
+	for _, record := range testDataRaw {
+		input, _ := d.PrepareData(record, outputNodes)
+
+		result := nn.Query(input)
+		target, _ := strconv.Atoi(record[0])
+
+		if helper.FindIndexWithMaxElem(result) == target {
+			rightAnswers++
+			continue
+		}
+
+		wrongAnswers++
+	}
+
+	fmt.Println("performance", float64(rightAnswers)/float64(rightAnswers+wrongAnswers))
+
 	handler := h.NewHandler(nn)
 
 	http.HandleFunc("/recognise", handler.RecogniseHandler)
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	http.ListenAndServe(":8080", nil)
-
-	// testDataRaw, err := data.ReadCSVFile("data/mnist_test.csv")
-	// if err != nil {
-	// 	return
-	// }
-
-	// rightAnswers := 0
-	// wrongAnswers := 0
-	// for _, record := range testDataRaw {
-	// 	input, _ := data.PrepareData(record, outputNodes)
-
-	// 	result := nn.Query(input)
-	// 	target, _ := strconv.Atoi(record[0])
-
-	// 	if helper.FindIndexWithMaxElem(result) == target {
-	// 		rightAnswers++
-	// 		continue
-	// 	}
-
-	// 	wrongAnswers++
-	// }
-
-	// fmt.Println("performance", float64(rightAnswers)/float64(rightAnswers+wrongAnswers))
 }
