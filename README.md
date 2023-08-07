@@ -14,7 +14,7 @@ precision on mnist test data ~97.7%
 
 ### static frontend
 <p align="middle">
-  <img src='emptyfornow?raw=true' width='300'>
+  <img src='https://github.com/krulsaidme0w/golang-simple-digit-recognizer/blob/main/static/show.png?raw=true?raw=true' width='300'>
 </p>
 
 written in 1 day with fun <3
