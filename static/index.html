@@ -84,6 +84,9 @@
   <div id="canvas-container">
     <h2>digit recognizer</h2>
     <canvas id="canvas" width="280" height="280"></canvas>
+    <div id="answerContainer">
+      <h3 id="answerValue">Recognition Result: -</h3>
+    </div>
     <input type="range" id="alphaSlider" min="0" max="255" step="1" value="255">
     <span id="alphaValue">255</span>
     <button id="clearButton">clear</button>
@@ -152,6 +155,8 @@
 
       const clearButton = document.getElementById('clearButton');
       clearButton.addEventListener('click', () => {
+        const answerValue = document.getElementById('answerValue');
+        answerValue.textContent = "Recognition Result: -";
         pixels.forEach(row => row.fill(0));
         drawPixels();
       });
@@ -162,7 +167,7 @@
       });
     
       function sendPixelsToServer(pixels) {
-        const url = 'http://localhost:8080';
+        const url = 'http://localhost:8080/recognise';
         const data = JSON.stringify(pixels);
 
         fetch(url, {
@@ -175,6 +180,8 @@
         .then(response => response.json())
         .then(result => {
           console.log('Server response:', result);
+          const answerValue = document.getElementById('answerValue');
+          answerValue.textContent = "Recognition Result: " + result.answer;
         })
         .catch(error => {
           console.error('Error sending data:', error);

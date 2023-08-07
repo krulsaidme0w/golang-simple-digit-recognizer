@@ -41,3 +41,15 @@ func PrepareData(record []string, outputNodes int) ([]float64, []float64) {
 
 	return inputs, targets
 }
+
+func PrepareMatrix(m [][]int) []float64 {
+	arr := make([]float64, 0, len(m)*len(m))
+
+	for i := 0; i < len(m); i++ {
+		for j := 0; j < len(m[i]); j++ {
+			arr = append(arr, (float64(m[i][j])/255.0*0.98)+0.01)
+		}
+	}
+
+	return arr
+}
