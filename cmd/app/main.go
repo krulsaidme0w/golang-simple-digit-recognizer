@@ -1,62 +1,61 @@
 package main
 
 import (
-	"fmt"
-	"strconv"
-	"time"
-
-	"github.com/krulsaidme0w/golang-simple-neural-network/internal/data"
-	n "github.com/krulsaidme0w/golang-simple-neural-network/internal/nnetwork"
-	"github.com/krulsaidme0w/golang-simple-neural-network/pkg/helper"
+	"net/http"
 )
 
 func main() {
-	inputNodes := 784
-	hiddenNodes := 300
-	outputNodes := 10
-	epochesCount := 7
-	learningRate := 0.1
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+	http.ListenAndServe(":3000", nil)
 
-	nn := n.NewNeuralNetwork(inputNodes, hiddenNodes, outputNodes, epochesCount, learningRate)
+	// inputNodes := 784
+	// hiddenNodes := 300
+	// outputNodes := 10
+	// epochesCount := 7
+	// learningRate := 0.1
 
-	trainingDataRaw, err := data.ReadCSVFile("data/mnist_train_100.csv")
-	if err != nil {
-		return
-	}
+	// nn := n.NewNeuralNetwork(inputNodes, hiddenNodes, outputNodes, epochesCount, learningRate)
 
-	trainingDataInputs := make([][]float64, 0, len(trainingDataRaw))
-	trainingDataTargets := make([][]float64, 0, len(trainingDataRaw))
-	for _, record := range trainingDataRaw {
-		inputs, targets := data.PrepareData(record, outputNodes)
-		trainingDataInputs = append(trainingDataInputs, inputs)
-		trainingDataTargets = append(trainingDataTargets, targets)
-	}
+	// trainingDataRaw, err := data.ReadCSVFile("data/mnist_train.csv")
+	// if err != nil {
+	// 	return
+	// }
 
-	start := time.Now()
-	nn.Train(trainingDataInputs, trainingDataTargets)
-	elapsed := time.Since(start)
-	fmt.Println("train took ", elapsed)
+	// start := time.Now()
 
-	testDataRaw, err := data.ReadCSVFile("data/mnist_test.csv")
-	if err != nil {
-		return
-	}
+	// trainingDataInputs := make([][]float64, 0, len(trainingDataRaw))
+	// trainingDataTargets := make([][]float64, 0, len(trainingDataRaw))
+	// for _, record := range trainingDataRaw {
+	// 	inputs, targets := data.PrepareData(record, outputNodes)
+	// 	trainingDataInputs = append(trainingDataInputs, inputs)
+	// 	trainingDataTargets = append(trainingDataTargets, targets)
+	// }
 
-	rightAnswers := 0
-	wrongAnswers := 0
-	for _, record := range testDataRaw {
-		input, _ := data.PrepareData(record, outputNodes)
+	// nn.Train(trainingDataInputs, trainingDataTargets)
 
-		result := nn.Query(input)
-		target, _ := strconv.Atoi(record[0])
+	// elapsed := time.Since(start)
+	// fmt.Println("train took", elapsed)
 
-		if helper.FindIndexWithMaxElem(result) == target {
-			rightAnswers++
-			continue
-		}
+	// testDataRaw, err := data.ReadCSVFile("data/mnist_test.csv")
+	// if err != nil {
+	// 	return
+	// }
 
-		wrongAnswers++
-	}
+	// rightAnswers := 0
+	// wrongAnswers := 0
+	// for _, record := range testDataRaw {
+	// 	input, _ := data.PrepareData(record, outputNodes)
 
-	fmt.Println("performance ", float64(rightAnswers)/float64(rightAnswers+wrongAnswers))
+	// 	result := nn.Query(input)
+	// 	target, _ := strconv.Atoi(record[0])
+
+	// 	if helper.FindIndexWithMaxElem(result) == target {
+	// 		rightAnswers++
+	// 		continue
+	// 	}
+
+	// 	wrongAnswers++
+	// }
+
+	// fmt.Println("performance", float64(rightAnswers)/float64(rightAnswers+wrongAnswers))
 }

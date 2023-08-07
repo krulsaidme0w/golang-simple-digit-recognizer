@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>digit recognizer</title>
+  <style>
+    body {
+      font-family: "Lucida Console", "Courier New", monospace;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f0f0f0;
+      font-weight: 50;
+    }
+
+    #canvas-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    canvas {
+      border: 1px solid #ddd;
+      cursor: pointer;
+    }
+
+    input[type="range"] {
+      width: 200px;
+      margin: 10px 0;
+      appearance: none;
+      background-color: #ddd;
+      height: 5px;
+      border-radius: 5px;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background-color: #3498db;
+      cursor: pointer;
+    }
+
+    #alphaValue {
+      font-size: 18px;
+      color: #333;
+    }
+
+    a {
+        margin-top: 15px;
+        font-size: 16px;
+    }
+
+    button {
+      margin-top: 10px;
+      padding: 5px 10px;
+      font-size: 16px;
+      background-color: #3498db;
+      border: none;
+      color: #fff;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    button:hover {
+      background-color: #2980b9;
+    }
+  </style>
+</head>
+<body>
+  <div id="canvas-container">
+    <h2>digit recognizer</h2>
+    <canvas id="canvas" width="280" height="280"></canvas>
+    <input type="range" id="alphaSlider" min="0" max="255" step="1" value="255">
+    <span id="alphaValue">255</span>
+    <button id="clearButton">clear</button>
+    <button id="submitButton">submit</button>
+    <a id="linkGithub" href="https://github.com/krulsaidme0w">github</a>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+
+      const pixelSize = 10;
+      const rows = canvas.height / pixelSize;
+      const cols = canvas.width / pixelSize;
+
+      const pixels = new Array(rows).fill(null).map(() => new Array(cols).fill(0));
+      let alpha = 255;
+
+      let mouseDown = false;
+
+      function drawPixels() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (let row = 0; row < rows; row++) {
+          for (let col = 0; col < cols; col++) {
+            if (pixels[row][col] > 0) {
+              ctx.fillStyle = `rgba(0, 0, 0, ${pixels[row][col] / 255})`;
+              ctx.fillRect(col * pixelSize, row * pixelSize, pixelSize, pixelSize);
+            }
+          }
+        }
+      }
+
+      function handleMouse(event) {
+        const rect = canvas.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+        const col = Math.floor(x / pixelSize);
+        const row = Math.floor(y / pixelSize);
+
+        if (row >= 0 && row < rows && col >= 0 && col < cols) {
+          if (mouseDown) {
+            pixels[row][col] = alpha;
+            drawPixels();
+          }
+        }
+      }
+
+      canvas.addEventListener('mousedown', () => {
+        mouseDown = true;
+      });
+
+      canvas.addEventListener('mouseup', () => {
+        mouseDown = false;
+      });
+
+      canvas.addEventListener('mousemove', handleMouse);
+
+      const alphaSlider = document.getElementById('alphaSlider');
+      const alphaValue = document.getElementById('alphaValue');
+
+      alphaSlider.addEventListener('input', () => {
+        alpha = parseInt(alphaSlider.value);
+        alphaValue.textContent = alpha;
+      });
+
+      const clearButton = document.getElementById('clearButton');
+      clearButton.addEventListener('click', () => {
+        pixels.forEach(row => row.fill(0));
+        drawPixels();
+      });
+
+      const submitButton = document.getElementById('submitButton');
+      submitButton.addEventListener('click', () => {
+        sendPixelsToServer(pixels);
+      });
+    
+      function sendPixelsToServer(pixels) {
+        const url = 'http://localhost:8080';
+        const data = JSON.stringify(pixels);
+
+        fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: data
+        })
+        .then(response => response.json())
+        .then(result => {
+          console.log('Server response:', result);
+        })
+        .catch(error => {
+          console.error('Error sending data:', error);
+        });
+      }
+
+      drawPixels();
+    });
+  </script>
+</body>
+</html>
